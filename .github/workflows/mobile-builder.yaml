@@ -18,7 +18,7 @@ permissions:
 
 env:
   IMAGE: ghcr.io/ginbun/mobile-builder-android-node
-  TAG: android-36-jdk17-node24-pnpm9
+  TAG: android-36-jdk17-node24-pnpm10
 
 jobs:
   build:
@@ -54,7 +54,3 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.tags.outputs.tags }}
           platforms: linux/amd64
-          build-args: |
-            ANDROID_IMAGE=ghcr.io/alvr/alpine-android:android-36-jdk17-v2026.02.20
-            NODE_VERSION=24
-            PNPM_VERSION=9
