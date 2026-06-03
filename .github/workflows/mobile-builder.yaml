@@ -1,4 +1,4 @@
-name: Mobile Builder Image
+name: Android Node SDK Image
 
 on:
   push:
@@ -17,12 +17,12 @@ permissions:
   packages: write
 
 env:
-  IMAGE: ghcr.io/ginbun/mobile-builder-android-node
-  TAG: android-36-jdk17-node24-pnpm10
+  IMAGE: ghcr.io/ginbun/android-node-sdk
+  TAG: android-36-jdk17-node24-pnpm10-ndk27-cmake3305
 
 jobs:
   build:
-    name: Build Mobile Builder
+    name: Build android-node-sdk
     runs-on: ubuntu-latest
 
     steps:
