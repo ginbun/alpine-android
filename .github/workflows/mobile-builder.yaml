@@ -1,69 +1,60 @@
 name: Mobile Builder Image
 
 on:
-  pull_request:
-    paths:
-      - docker/mobile-builder.Dockerfile
-      - .github/workflows/mobile-builder.yaml
   push:
     branches:
       - master
     tags:
       - v*
+  pull_request:
+    paths:
+      - docker/mobile-builder.Dockerfile
+      - .github/workflows/mobile-builder.yaml
   workflow_dispatch:
-
-env:
-  GHCR_IMAGE_OWNER: ginbun
-  GHCR_IMAGE_NAME: mobile-builder-android-node
-  ANDROID_API: 36
-  JDK_VERSION: 17
-  NODE_VERSION: 24
-  PNPM_VERSION: 9
-  ANDROID_IMAGE: ghcr.io/alvr/alpine-android:android-36-jdk17-v2026.02.20
 
 permissions:
   contents: read
   packages: write
 
+env:
+  IMAGE: ghcr.io/ginbun/mobile-builder-android-node
+  TAG: android-36-jdk17-node24-pnpm9
+
 jobs:
-  build_mobile_builder:
-    name: Build Mobile Builder (Android ${{ env.ANDROID_API }} + Node ${{ env.NODE_VERSION }} + pnpm)
+  build:
+    name: Build Mobile Builder
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ env.GHCR_IMAGE_OWNER }}/${{ env.GHCR_IMAGE_NAME }}
-          tags: |
-            type=raw,value=android-${{ env.ANDROID_API }}-jdk${{ env.JDK_VERSION }}-node${{ env.NODE_VERSION }}-pnpm${{ env.PNPM_VERSION }}
-            type=raw,value=android-${{ env.ANDROID_API }}-jdk${{ env.JDK_VERSION }}-node${{ env.NODE_VERSION }}-pnpm${{ env.PNPM_VERSION }}-${{ github.ref_name }},enable=${{ startsWith(github.ref, 'refs/tags/v') }}
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+      - uses: docker/setup-buildx-action@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push mobile builder image
-        uses: docker/build-push-action@v6
+      - id: tags
+        run: |
+          tags="${IMAGE}:${TAG}"
+          if [[ "${GITHUB_REF}" == "refs/heads/master" ]]; then
+            tags="${tags},${IMAGE}:latest"
+          fi
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            tags="${tags},${IMAGE}:${TAG}-${GITHUB_REF#refs/tags/}"
+          fi
+          echo "tags=${tags}" >> "${GITHUB_OUTPUT}"
+
+      - uses: docker/build-push-action@v6
         with:
           context: ./docker
           file: ./docker/mobile-builder.Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.tags.outputs.tags }}
           platforms: linux/amd64
           build-args: |
-            ANDROID_IMAGE=${{ env.ANDROID_IMAGE }}
-            NODE_VERSION=${{ env.NODE_VERSION }}
-            PNPM_VERSION=${{ env.PNPM_VERSION }}
+            ANDROID_IMAGE=ghcr.io/alvr/alpine-android:android-36-jdk17-v2026.02.20
+            NODE_VERSION=24
+            PNPM_VERSION=9
