@@ -2,7 +2,9 @@
 # Android SDK 36 + JDK 17 + Node 24 + pnpm 10 + NDK 27 + CMake 3.30.5
 # Size: alpine-android-base (not android-36) + arm64-only NDK trim + sdk cache cleanup
 
-ARG BASE_IMAGE=ghcr.io/alvr/alpine-android-base:jdk17-v2026.02.20
+# Base: alpine-android-base has no dated tags (see upstream README "Versioning" section).
+# Valid tags: jdk17 | latest-jdk17 — not jdk17-v2026.02.20 (that format is for android-XX images only).
+ARG BASE_IMAGE=ghcr.io/alvr/alpine-android-base:jdk17
 
 FROM ${BASE_IMAGE}
 LABEL maintainer="ginbun"
