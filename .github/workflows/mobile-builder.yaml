@@ -19,6 +19,9 @@ permissions:
 env:
   IMAGE: ghcr.io/ginbun/android-node-sdk
   TAG: android-36-jdk17-node24-pnpm10-ndk27-cmake3305-arm64
+  # legacy alias — same image, old pull URL
+  LEGACY_IMAGE: ghcr.io/ginbun/mobile-builder-android-node
+  LEGACY_TAG: android-36-jdk17-node24-pnpm10
 
 jobs:
   build:
@@ -38,12 +41,13 @@ jobs:
 
       - id: tags
         run: |
-          tags="${IMAGE}:${TAG}"
+          tags="${IMAGE}:${TAG},${LEGACY_IMAGE}:${LEGACY_TAG}"
           if [[ "${GITHUB_REF}" == "refs/heads/master" ]]; then
-            tags="${tags},${IMAGE}:latest"
+            tags="${tags},${IMAGE}:latest,${LEGACY_IMAGE}:latest"
           fi
           if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             tags="${tags},${IMAGE}:${TAG}-${GITHUB_REF#refs/tags/}"
+            tags="${tags},${LEGACY_IMAGE}:${LEGACY_TAG}-${GITHUB_REF#refs/tags/}"
           fi
           echo "tags=${tags}" >> "${GITHUB_OUTPUT}"
 
