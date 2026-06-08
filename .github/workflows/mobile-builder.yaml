@@ -18,7 +18,7 @@ permissions:
 
 env:
   IMAGE: ghcr.io/ginbun/android-node-sdk
-  TAG: android-36-jdk17-node24-pnpm10-ndk27-cmake3305
+  TAG: android-36-jdk17-node24-pnpm10-ndk27-cmake3305-arm64
 
 jobs:
   build:
